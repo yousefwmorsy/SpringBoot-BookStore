@@ -1,6 +1,6 @@
 package com.springpractice.bookstore.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     @NotNull
     private String firstName;
     @NotNull
@@ -20,7 +20,7 @@ public class Author {
     @OneToMany(
             mappedBy = "author"
     )
-    @JsonManagedReference
+    @JsonIgnore
     private List<Book> books;
 
     public Author() {

@@ -1,6 +1,5 @@
 package com.springpractice.bookstore.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -19,7 +18,6 @@ public class Book {
     @JoinColumn(
             name = "author_id"
     )
-    @JsonBackReference
     private Author author;
     @NotNull
     private String isbn;
