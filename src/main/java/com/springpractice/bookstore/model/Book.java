@@ -1,9 +1,7 @@
 package com.springpractice.bookstore.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
@@ -17,8 +15,12 @@ public class Book {
 
     @NotNull
     private String title;
-    @NotNull
-    private String author;
+    @ManyToOne
+    @JoinColumn(
+            name = "author_id"
+    )
+    @JsonBackReference
+    private Author author;
     @NotNull
     private String isbn;
     @PositiveOrZero
@@ -43,11 +45,11 @@ public class Book {
         this.title = title;
     }
 
-    public String getAuthor() {
+    public Author getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(Author author) {
         this.author = author;
     }
 
