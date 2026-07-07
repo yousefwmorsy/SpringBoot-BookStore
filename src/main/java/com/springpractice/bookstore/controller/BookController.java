@@ -3,6 +3,7 @@ package com.springpractice.bookstore.controller;
 import com.springpractice.bookstore.exceptions.ResourceNotFoundException;
 import com.springpractice.bookstore.model.Book;
 import com.springpractice.bookstore.repository.BookRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,15 +24,15 @@ public class BookController {
     }
 
     @PostMapping
-    public Book createBook(@RequestBody Book book) {
+    public Book createBook(@Valid @RequestBody Book book) {
         return bookRepository.save(book);
     }
 
     @PutMapping("/{id}")
-    public Book updateBook(@PathVariable long id, @RequestBody Book book) {
-        Book existingBook = bookRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Book with id " + id + " not found")
-        );
+    public Book updateBook(@PathVariable long id, @Valid @RequestBody Book book) {
+        if (!bookRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Book with id " + id + " not found");
+        }
         book.setId(id);
         return bookRepository.save(book);
     }
