@@ -1,8 +1,8 @@
 package com.springpractice.bookstore.controller;
 
-import com.springpractice.bookstore.exceptions.ResourceNotFoundException;
-import com.springpractice.bookstore.model.Book;
-import com.springpractice.bookstore.repository.BookRepository;
+import com.springpractice.bookstore.dto.BookRequestDTO;
+import com.springpractice.bookstore.dto.BookResponseDTO;
+import com.springpractice.bookstore.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,44 +12,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
-    private final BookRepository bookRepository;
+    private final BookService bookService;
 
-    public BookController(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
     }
 
     @GetMapping
-    public List<Book> getBooks() {
-        return bookRepository.findAll();
+    public List<BookResponseDTO> getBooks() {
+        return bookService.getBooks();
     }
 
     @PostMapping
-    public Book createBook(@Valid @RequestBody Book book) {
-        return bookRepository.save(book);
+    public BookResponseDTO createBook(@Valid @RequestBody BookRequestDTO book) {
+        return bookService.createBook(book);
     }
 
     @PutMapping("/{id}")
-    public Book updateBook(@PathVariable long id, @Valid @RequestBody Book book) {
-        if (!bookRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Book with id " + id + " not found");
-        }
-        book.setId(id);
-        return bookRepository.save(book);
+    public BookResponseDTO updateBook(@PathVariable long id, @Valid @RequestBody BookRequestDTO book) {
+        return bookService.updateBook(id, book);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBook(@PathVariable long id) {
-        if (!bookRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Book with id " + id + " not found");
-        }
-        bookRepository.deleteById(id);
+        bookService.deleteBook(id);
     }
 
     @GetMapping("/isbn/{isbn}")
-    public Book getBooksByIsbn(@PathVariable String isbn) {
-        return bookRepository.findByIsbn(isbn).orElseThrow(
-                () -> new ResourceNotFoundException("Book with ISBN (" + isbn + ") not found")
-        );
+    public BookResponseDTO getBookByIsbn(@PathVariable String isbn) {
+        return bookService.getBookByIsbn(isbn);
     }
 }

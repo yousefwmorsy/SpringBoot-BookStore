@@ -1,8 +1,8 @@
 package com.springpractice.bookstore.controller;
 
-import com.springpractice.bookstore.exceptions.ResourceNotFoundException;
-import com.springpractice.bookstore.model.Author;
-import com.springpractice.bookstore.repository.AuthorRepository;
+import com.springpractice.bookstore.dto.AuthorRequestDTO;
+import com.springpractice.bookstore.dto.AuthorResponseDTO;
+import com.springpractice.bookstore.service.AuthorService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,37 +12,30 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/authors")
 public class AuthorController {
-    private final AuthorRepository authorRepository;
+    private final AuthorService authorService;
 
-    public AuthorController(AuthorRepository authorRepository) {
-        this.authorRepository = authorRepository;
+    AuthorController(AuthorService authorService) {
+        this.authorService = authorService;
     }
 
     @GetMapping
-    public List<Author> getAuthors() {
-        return authorRepository.findAll();
+    public List<AuthorResponseDTO> getAuthors() {
+        return authorService.getAuthors();
     }
 
     @PostMapping
-    public Author createAuthor(@Valid @RequestBody Author author) {
-        return authorRepository.save(author);
+    public AuthorResponseDTO createAuthor(@Valid @RequestBody AuthorRequestDTO author) {
+        return authorService.createAuthor(author);
     }
 
     @PutMapping("/{id}")
-    public Author updateAuthor(@PathVariable long id, @Valid @RequestBody Author author) {
-        if (!authorRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Author with id " + id + " not found");
-        }
-        author.setId(id);
-        return authorRepository.save(author);
+    public AuthorResponseDTO updateAuthor(@PathVariable long id, @Valid @RequestBody AuthorRequestDTO author) {
+        return authorService.updateAuthor(id, author);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAuthor(@PathVariable long id) {
-        if (!authorRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Author with id " + id + " not found");
-        }
-        authorRepository.deleteById(id);
+        authorService.deleteAuthor(id);
     }
 }
