@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 26 with Temurin
+        uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile the application
+        run: ./mvnw compile --no-transfer-progress
+
+      - name: Run tests with JaCoCo agent
+        run: ./mvnw test --no-transfer-progress
+
+      - name: Generate JaCoCo reports
+        run: ./mvnw jacoco:report --no-transfer-progress
+
+      - name: Enforce coverage threshold (≥ 80%)
+        id: coverage-check
+        continue-on-error: true
+        run: ./mvnw jacoco:check --no-transfer-progress
+
+      - name: Generate coverage summary markdown
+        if: always()
+        run: |
+          echo "## JaCoCo Coverage Summary" > coverage-summary.md
+          echo "" >> coverage-summary.md
+          echo "| Metric | Result | Status (≥ 80%) |" >> coverage-summary.md
+          echo "|--------|--------|----------------|" >> coverage-summary.md
+
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            awk -F',' 'NR>1 {lineMissed+=$7; lineCovered+=$8; branchMissed+=$5; branchCovered+=$6} END {
+              lineTotal = lineMissed + lineCovered;
+              branchTotal = branchMissed + branchCovered;
+              linePct = (lineTotal > 0) ? (lineCovered/lineTotal)*100 : 0;
+              branchPct = (branchTotal > 0) ? (branchCovered/branchTotal)*100 : 0;
+              printf "LINE_PCT=%.2f\nBRANCH_PCT=%.2f\n", linePct, branchPct;
+            }' target/site/jacoco/jacoco.csv > coverage-metrics.txt
+            source coverage-metrics.txt
+
+            LINE_STATUS="✅ Pass"
+            if (( $(echo "$LINE_PCT < 80.00" | bc -l) )); then LINE_STATUS="❌ Fail"; fi
+            BRANCH_STATUS="✅ Pass"
+            if (( $(echo "$BRANCH_PCT < 80.00" | bc -l) )); then BRANCH_STATUS="❌ Fail"; fi
+
+            echo "| **Line Coverage** | ${LINE_PCT}% | ${LINE_STATUS} |" >> coverage-summary.md
+            echo "| **Branch Coverage** | ${BRANCH_PCT}% | ${BRANCH_STATUS} |" >> coverage-summary.md
+          else
+            echo "| Coverage report not available | - | ⚠️ |" >> coverage-summary.md
+          fi
+
+          echo "" >> coverage-summary.md
+          echo "---" >> coverage-summary.md
+          echo "_Threshold: 80.00% for both line and branch coverage._" >> coverage-summary.md
+
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Post coverage summary as PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: coverage
+          path: coverage-summary.md
+
+      - name: Fail workflow if coverage below threshold
+        if: steps.coverage-check.outcome == 'failure'
+        run: |
+          echo "❌ Coverage is below the 80% threshold. See the coverage summary above for details."
+          exit 1
