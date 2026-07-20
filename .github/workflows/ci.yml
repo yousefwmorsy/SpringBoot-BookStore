@@ -21,19 +21,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Compile the application
-        run: ./mvnw compile --no-transfer-progress
-
-      - name: Run tests with JaCoCo agent
-        run: ./mvnw test --no-transfer-progress
-
-      - name: Generate JaCoCo reports
-        run: ./mvnw jacoco:report --no-transfer-progress
-
-      - name: Enforce coverage threshold (≥ 80%)
-        id: coverage-check
+      - name: Compile, test, generate reports, and check coverage (≥ 80%)
+        id: verify
         continue-on-error: true
-        run: ./mvnw jacoco:check --no-transfer-progress
+        run: ./mvnw verify --no-transfer-progress
 
       - name: Generate coverage summary markdown
         if: always()
@@ -83,8 +74,8 @@ jobs:
           header: coverage
           path: coverage-summary.md
 
-      - name: Fail workflow if coverage below threshold
-        if: steps.coverage-check.outcome == 'failure'
+      - name: Fail workflow if compilation, tests, or coverage failed
+        if: steps.verify.outcome == 'failure'
         run: |
-          echo "❌ Coverage is below the 80% threshold. See the coverage summary above for details."
+          echo "❌ Build failed. See the coverage summary above for details."
           exit 1
