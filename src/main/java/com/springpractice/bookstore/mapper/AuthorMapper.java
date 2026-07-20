@@ -23,6 +23,6 @@ public class AuthorMapper {
         author.setFirstName(dto.firstName());
         author.setLastName(dto.lastName());
         author.setBiography(dto.biography());
-        return new Author();
+        return author;
     }
 }
