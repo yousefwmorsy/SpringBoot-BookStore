@@ -14,7 +14,7 @@ public class BookMapper {
         return new BookResponseDTO(
                 book.getId(),
                 book.getTitle(),
-                AuthorMapper.toResponseDTO(book.getAuthor()),
+                book.getAuthor() != null ? AuthorMapper.toResponseDTO(book.getAuthor()) : null,
                 book.getIsbn(),
                 book.getPrice()
         );

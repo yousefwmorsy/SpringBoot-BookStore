@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+jwt:
+  secret: MOt3AG6EAUi6zn/Sh8TFLZtTf3Mwu0jmV+m0L4eqTSE=
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 7
