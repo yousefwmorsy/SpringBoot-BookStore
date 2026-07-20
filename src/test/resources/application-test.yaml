@@ -10,6 +10,6 @@ spring:
     show-sql: false
     database-platform: org.hibernate.dialect.H2Dialect
 jwt:
-  secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha-algorithm
+  secret: MOt3AG6EAUi6zn/Sh8TFLZtTf3Mwu0jmV+m0L4eqTSE=
   access-token-expiration-minutes: 15
   refresh-token-expiration-days: 7
